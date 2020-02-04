@@ -1,10 +1,13 @@
 import 'mocha';
 import { expect } from 'chai';
-import { hello } from './index';
+import { assume, that } from '.';
 
-describe('Hello function', () => {
-  it('should return hello world', () => {
-    const result = hello();
-    expect(result).to.equal('Hello World!');
+describe('assume', () => {
+  describe('equalTo', () => {
+    it('should throw on failure', () => {
+      const myValue = 7;
+      assume(that(() => myValue).is.equalTo(9));
+      expect(true).is.true;
+    });
   });
 });
