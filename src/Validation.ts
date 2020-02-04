@@ -1,8 +1,8 @@
 export class Validation<T> {
-  private _actual: T;
-  private _actualFunc: () => T;
-  private _error: Error = null;
-  private _not = false;
+  protected _actual: T;
+  protected _actualFunc: () => T;
+  protected _error: Error = null;
+  protected _not = false;
 
   public get actual(): T {
     return this._actual;
@@ -12,16 +12,24 @@ export class Validation<T> {
     return this._error;
   }
 
-  public get is(): Validation<T> {
-    return this;
+  public constructor(actualFunc: () => T) {
+    this._actualFunc = actualFunc;
+    this._actual = actualFunc();
+  }
+}
+
+export class ValidationStart<T> extends Validation<T> {
+  public get is(): ValidationMiddle<T> {
+    return (this as unknown) as ValidationMiddle<T>;
   }
 
-  public get not(): Validation<T> {
-    this._not = !this._not;
-    return this;
+  public constructor(actualFunc: () => T) {
+    super(actualFunc);
   }
+}
 
-  public satisfies(validationFunc: () => boolean, contextFunc: () => object): Validation<T> {
+export class ValidationMiddle<T> extends Validation<T> {
+  public satisfiedBy(validationFunc: () => boolean, contextFunc: () => object): ValidationEnd<T> {
     const result = validationFunc();
     const failed = this._not ? result : !result;
     if (failed) {
@@ -41,12 +49,37 @@ export class Validation<T> {
       const message = messageParts.join('\n');
       this._error = new Error(message);
     }
-    return this;
+    return (this as unknown) as ValidationEnd<T>;
   }
 
   public constructor(actualFunc: () => T) {
-    this._actualFunc = actualFunc;
-    this._actual = actualFunc();
+    super(actualFunc);
+  }
+
+  public get not(): ValidationMiddle<T> {
+    this._not = !this._not;
+    return (this as unknown) as ValidationMiddle<T>;
+  }
+
+  public true(this: ValidationMiddle<boolean>): ValidationEnd<boolean> {
+    const actual = this.actual;
+    return this.satisfiedBy(
+      () => actual === true,
+      () => ({
+        actual,
+      }),
+    );
+  }
+
+  public equalTo(this: ValidationMiddle<number>, expected: number): ValidationEnd<number> {
+    const actual = this.actual;
+    return this.satisfiedBy(
+      () => actual === expected,
+      () => ({
+        actual,
+        expected,
+      }),
+    );
   }
 
   private getFuncBody(func: () => unknown): string {
@@ -60,29 +93,10 @@ export class Validation<T> {
   }
 }
 
-export interface Validation<T> {
-  is: Validation<T>;
-  true(this: Validation<boolean>): Validation<boolean>;
-  equalTo(this: Validation<number>, expected: number): Validation<number>;
+export class ValidationEnd<T> extends Validation<T> {
+  public constructor(actualFunc: () => T) {
+    super(actualFunc);
+  }
+
+  public foo(): void {}
 }
-
-Validation.prototype.true = function(): Validation<boolean> {
-  const actual = this.actual;
-  return this.satisfies(
-    () => actual === true,
-    () => ({
-      actual,
-    }),
-  );
-};
-
-Validation.prototype.equalTo = function(expected: number): Validation<number> {
-  const actual = this.actual;
-  return this.satisfies(
-    () => actual === expected,
-    () => ({
-      actual,
-      expected,
-    }),
-  );
-};

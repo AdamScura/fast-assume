@@ -1,6 +1,6 @@
-import { Validation } from './Validation';
+import { ValidationEnd } from './Validation';
 
-export function assume(validation: Validation<unknown>): void {
+export function assume(validation: ValidationEnd<unknown>): void {
   if (validation.error) {
     throw validation.error;
   }

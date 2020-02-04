@@ -1,5 +1,5 @@
-import { Validation } from './Validation';
+import { ValidationStart } from './Validation';
 
-export function that<T>(valueFunc: () => T): Validation<T> {
-  return new Validation(valueFunc);
+export function that<T>(valueFunc: () => T): ValidationStart<T> {
+  return new ValidationStart(valueFunc);
 }

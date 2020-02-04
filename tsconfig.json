@@ -4,7 +4,15 @@
     "allowJs": true,
     "target": "es2018",
     "sourceMap": true,
-    "module": "commonjs"
+    "module": "commonjs",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true
   },
   "include": ["./src/**/*"]
 }
